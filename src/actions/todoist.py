@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 from typing import Dict, Any
 from pprint import pprint
 from uuid import uuid1 as uuid
@@ -89,14 +90,31 @@ def update_next_actions(token, next_action_label=None, debug=False):
             for i, task in enumerate(section_tasks):
                 _print(f"    task: {task['content']}")
                 
-                if i == 0 and next_action_id not in task["label_ids"]:
+                due_date_str = task.get("due", {}).get("date", "")[:10]
+                far_in_the_future = False
+                
+                if due_date_str:
+                    due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
+                    days_until_due = (
+                        due_date.date() - datetime.today().date()
+                    ).days
+                    _print(f"      days_until_due: {days_until_due}")
+                    
+                    if days_until_due > 1:
+                        far_in_the_future = True
+                   
+                if (
+                    i == 0 
+                    and next_action_id not in task["label_ids"]
+                    and not far_in_the_future
+                ):
                     task["label_ids"].append(next_action_id)
                     updated_tasks.append({
                         "id": task["id"],
                         "label_ids": task["label_ids"]
                     })
                 
-                elif i > 0 and next_action_id in task["label_ids"]:
+                elif next_action_id in task["label_ids"]:
                     task["label_ids"].remove(next_action_id)
                     updated_tasks.append({
                         "id": task["id"],
@@ -105,4 +123,7 @@ def update_next_actions(token, next_action_label=None, debug=False):
     
     for task in updated_tasks:
         api.post(f"tasks/{task['id']}", task)
+
+if __name__ == "__main__":
+    update_next_actions("c4a0a6c4f035bc8359d4bcb20079b8854376f928", debug=True)
 
