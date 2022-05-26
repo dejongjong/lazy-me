@@ -45,7 +45,7 @@ class TodoistApi:
         return res
         
 
-def update_next_actions(token, next_action_label=None):
+def update_next_actions(token, next_action_label=None, debug=False):
     if next_action_label is None:
         next_action_label = "volgende-actie"
     
@@ -57,6 +57,7 @@ def update_next_actions(token, next_action_label=None):
         x["name"]: x["id"]
         for x in labels
     }
+    _print = lambda message: print(message) if debug else None
     
     updated_tasks = []
     next_action_id = label_ids[next_action_label]
@@ -64,6 +65,8 @@ def update_next_actions(token, next_action_label=None):
     for project in projects:
         if project['name'].endswith(" ·"):
             continue
+            
+        _print(f"project: {project['name']}")
         
         tasks = api.get("tasks", params={"project_id": project["id"]})
         project_sections = [
@@ -71,9 +74,11 @@ def update_next_actions(token, next_action_label=None):
             if x["project_id"] == project["id"]
         ]
         
-        for section in [{"name": "No section", "id": None}, *project_sections]:
+        for section in [{"name": "No section", "id": 0}, *project_sections]:
             if section["name"].endswith(" ·"):
                 continue
+            
+            _print(f"  section: {section['name']}")
             
             section_tasks = [
                 x for x in tasks
@@ -82,6 +87,8 @@ def update_next_actions(token, next_action_label=None):
             section_tasks.sort(key=lambda x: x["order"])
             
             for i, task in enumerate(section_tasks):
+                _print(f"    task: {task['content']}")
+                
                 if i == 0 and next_action_id not in task["label_ids"]:
                     task["label_ids"].append(next_action_id)
                     updated_tasks.append({
