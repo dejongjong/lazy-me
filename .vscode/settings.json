@@ -9,5 +9,10 @@
         "editor.codeActionsOnSave": {
             "source.organizeImports": true,
         },
-    }
+    },
+    "python.testing.pytestArgs": [
+        "test"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
