@@ -16,7 +16,7 @@ class TodoistApi:
 
     def get(
         self, resource, headers: Dict[str, str] | None = None, **kwargs
-    ) -> str | Dict[str, Any]:
+    ) -> str | Any:
         headers = headers or {}
         res = requests.get(
             url=f"{self.api_url}/{resource}",

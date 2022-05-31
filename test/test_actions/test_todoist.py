@@ -3,9 +3,10 @@ from actions import todoist
 
 
 @pytest.fixture
-def requests_mocks(requests_mock):
+def successful_mocks(requests_mock):
     requests_mock.get(
         "https://api.todoist.com/rest/v1/projects",
+        headers={"Content-Type": "application/json"},
         json=[
             {
                 "id": 220474322,
@@ -23,6 +24,7 @@ def requests_mocks(requests_mock):
     )
     requests_mock.get(
         "https://api.todoist.com/rest/v1/labels",
+        headers={"Content-Type": "application/json"},
         json=[
             {
                 "id": 2156154810,
@@ -42,10 +44,15 @@ def requests_mocks(requests_mock):
     )
     requests_mock.get(
         "https://api.todoist.com/rest/v1/sections",
+        headers={"Content-Type": "application/json"},
         json=[],
     )
-    requests_mock.get("https://api.todoist.com/rest/v1/sections", json=[])
+    requests_mock.get(
+        "https://api.todoist.com/rest/v1/tasks?project_id=220474322",
+        headers={"Content-Type": "application/json"},
+        json=[],
+    )
 
 
-def test_update_next_actions(requests_mocks):  # pylint: disable=W0613,W0621
+def test_update_next_actions(successful_mocks):  # pylint: disable=W0613,W0621
     todoist.update_next_actions("fake-token")
