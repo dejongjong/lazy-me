@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
 from requests.models import Response
@@ -46,9 +46,7 @@ class TodoistApi:
 
 
 @typechecked
-def update_next_actions(
-    token: str, next_action_label: str | None = None, debug: bool | None = False
-) -> None:
+def update_next_actions(token: str, next_action_label: str | None = None) -> List[str]:
     if next_action_label is None:
         next_action_label = "volgende-actie"
 
@@ -58,8 +56,10 @@ def update_next_actions(
     sections = api.get("sections")
     label_ids = {x["name"]: x["id"] for x in labels}
 
-    progress_messages = []
-    _progress = lambda message: progress_messages.append(message)
+    progress_messages: List[str] = []
+
+    def _progress(message: str):
+        progress_messages.append(message)
 
     updated_tasks = []
     next_action_id = label_ids[next_action_label]
