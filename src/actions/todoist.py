@@ -23,7 +23,7 @@ class TodoistApi:
             headers={**self.headers, **headers},
             **kwargs,
         )
-        assert res.status_code == 200
+        assert res.status_code == 200, res.text
 
         if res.headers.get("Content-Type") == "application/json":
             return res.json()
@@ -40,7 +40,7 @@ class TodoistApi:
             json=json,
             **kwargs,
         )
-        assert res.status_code == 204
+        assert res.status_code == 204, res.text
 
         return res
 
@@ -57,7 +57,9 @@ def update_next_actions(
     labels = api.get("labels")
     sections = api.get("sections")
     label_ids = {x["name"]: x["id"] for x in labels}
-    _print = lambda message: print(message) if debug else None
+
+    progress_messages = []
+    _progress = lambda message: progress_messages.append(message)
 
     updated_tasks = []
     next_action_id = label_ids[next_action_label]
@@ -66,7 +68,7 @@ def update_next_actions(
         if project["name"].endswith(" ·"):
             continue
 
-        _print(f"project: {project['name']}")
+        _progress(f"project: {project['name']}")
 
         tasks = api.get("tasks", params={"project_id": project["id"]})
         project_sections = [x for x in sections if x["project_id"] == project["id"]]
@@ -75,13 +77,13 @@ def update_next_actions(
             if section["name"].endswith(" ·"):
                 continue
 
-            _print(f"  section: {section['name']}")
+            _progress(f"  section: {section['name']}")
 
             section_tasks = [x for x in tasks if x.get("section_id") == section["id"]]
             section_tasks.sort(key=lambda x: x["order"])
 
             for i, task in enumerate(section_tasks):
-                _print(f"    task: {task['content']}")
+                _progress(f"    task: {task['content']}")
 
                 due_date_str = task.get("due", {}).get("date", "")[:10]
                 far_in_the_future = False
@@ -89,7 +91,7 @@ def update_next_actions(
                 if due_date_str:
                     due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
                     days_until_due = (due_date.date() - datetime.today().date()).days
-                    _print(f"      days_until_due: {days_until_due}")
+                    _progress(f"      days_until_due: {days_until_due}")
 
                     if days_until_due > 1:
                         far_in_the_future = True
@@ -113,6 +115,4 @@ def update_next_actions(
     for task in updated_tasks:
         api.post(f"tasks/{task['id']}", task)
 
-
-if __name__ == "__main__":
-    update_next_actions("c4a0a6c4f035bc8359d4bcb20079b8854376f928", debug=True)
+    return progress_messages
