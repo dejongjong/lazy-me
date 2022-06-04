@@ -58,8 +58,11 @@ def update_next_actions(token: str, next_action_label: str | None = None) -> Lis
 
     progress_messages: List[str] = []
 
-    def _progress(message: str):
-        progress_messages.append(message)
+    def _progress(message: str, extend=False):
+        if extend:
+            progress_messages[-1] += message
+        else:
+            progress_messages.append(message)
 
     updated_tasks = []
     next_action_id = label_ids[next_action_label]
@@ -94,6 +97,7 @@ def update_next_actions(token: str, next_action_label: str | None = None) -> Lis
                     _progress(f"      days_until_due: {days_until_due}")
 
                     if days_until_due > 1:
+                        _progress(", far in the future", extend=True)
                         far_in_the_future = True
 
                 if (
@@ -101,12 +105,14 @@ def update_next_actions(token: str, next_action_label: str | None = None) -> Lis
                     and next_action_id not in task["label_ids"]
                     and not far_in_the_future
                 ):
+                    _progress(", adding label", extend=True)
                     task["label_ids"].append(next_action_id)
                     updated_tasks.append(
                         {"id": task["id"], "label_ids": task["label_ids"]}
                     )
 
                 elif next_action_id in task["label_ids"]:
+                    _progress(", removing label", extend=True)
                     task["label_ids"].remove(next_action_id)
                     updated_tasks.append(
                         {"id": task["id"], "label_ids": task["label_ids"]}
