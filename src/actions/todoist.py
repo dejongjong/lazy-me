@@ -33,7 +33,7 @@ class TodoistApi:
     def post(
         self, resource, json, headers: Dict[str, str] | None = None, **kwargs
     ) -> Response:
-        headers = headers | {}
+        headers = headers or {}
         res = requests.post(
             url=f"{self.api_url}/{resource}",
             headers={**self.headers, "Content-Type": "application/json", **headers},
