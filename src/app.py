@@ -11,14 +11,16 @@ print(sys.version)
 
 @app.route("/")
 def hello_world():
-    return "<p>Hello, World!</p>"
+    return "Hello, World!", 200
 
 
 @app.route("/update-next-actions", methods=["POST"])
 def update_next_actions():
     data = request.get_json()
     if data is None:
-        return "Bad request: No POST data received", 400
+        return "Bad Request: No POST data received", 400
+    if not "token" in data:
+        return "Bad Request: No token received", 400
 
     try:
         todoist.update_next_actions(
@@ -26,8 +28,8 @@ def update_next_actions():
         )
         return "Success", 204
 
-    except KeyError:
-        return "Bad request: No token provided", 400
+    except Exception as err:
+        return f"Internal Server Error: {str(err)}", 500
 
 
 if __name__ == "__main__":
