@@ -98,16 +98,13 @@ def update_next_actions(token: str, next_action_label: str | None = None) -> Lis
                         _progress("far in the future", 3)
                         far_in_the_future = True
 
-                if (
-                    i == 0
-                    and next_action_id not in task["label_ids"]
-                    and not far_in_the_future
-                ):
-                    _progress("adding label", 3)
-                    task["label_ids"].append(next_action_id)
-                    updated_tasks.append(
-                        {"id": task["id"], "label_ids": task["label_ids"]}
-                    )
+                if i == 0 and not far_in_the_future:
+                    if next_action_id not in task["label_ids"]:
+                        _progress("adding label", 3)
+                        task["label_ids"].append(next_action_id)
+                        updated_tasks.append(
+                            {"id": task["id"], "label_ids": task["label_ids"]}
+                        )
 
                 elif next_action_id in task["label_ids"]:
                     _progress("removing label", 3)
