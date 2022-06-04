@@ -23,10 +23,11 @@ def update_next_actions():
         return "Bad Request: No token received", 400
 
     try:
-        progress_messags = todoist.update_next_actions(
-            token=data["token"], next_action_label=data.get("next_action_label")
-        )
-        return "\n".join(progress_messags), 204
+        progress_messages = ["Test1", "Test2"]
+        # todoist.update_next_actions(
+        #     token=data["token"], next_action_label=data.get("next_action_label")
+        # )
+        return "\n".join(progress_messages), 200
 
     except Exception as err:
         return f"Internal Server Error: {str(err)}", 500
