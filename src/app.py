@@ -26,7 +26,7 @@ def update_next_actions():
         progress_messages = todoist.update_next_actions(
             token=data["token"], next_action_label=data.get("next_action_label")
         )
-        return "\n".join(progress_messages), 200
+        return "\n".join(progress_messages), 200, {'Content-Type': 'text/plain'}
 
     except Exception as err:
         return f"Internal Server Error: {str(err)}", 500
