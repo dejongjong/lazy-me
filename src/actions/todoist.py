@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -46,7 +47,7 @@ class TodoistApi:
 
 
 @typechecked
-def update_next_actions(token: str, next_action_label: str | None = None) -> List[str]:
+def prioritise_actions(token: str, next_action_label: str | None = None) -> List[str]:
     if next_action_label is None:
         next_action_label = "volgende-actie"
 
@@ -85,6 +86,7 @@ def update_next_actions(token: str, next_action_label: str | None = None) -> Lis
             for i, task in enumerate(section_tasks):
                 _progress(f"task: {task['content']}", 2)
 
+                updated_task = deepcopy(task)
                 due_date_str = task.get("due", {}).get("date", "")[:10]
                 far_in_the_future = False
 
@@ -97,19 +99,34 @@ def update_next_actions(token: str, next_action_label: str | None = None) -> Lis
                         _progress("far in the future", 3)
                         far_in_the_future = True
 
+                    # Toggle due date-based prioritisation
+                    if days_until_due <= 0 and task["priority"] == 1:
+                        updated_task["priority"] = 2
+                    elif task["priority"] == 2:
+                        updated_task["priority"] = 1
+
+                # Toggle next action label
                 if i == 0 and not far_in_the_future:
                     if next_action_id not in task["label_ids"]:
                         _progress("adding label", 3)
-                        task["label_ids"].append(next_action_id)
-                        updated_tasks.append(
-                            {"id": task["id"], "label_ids": task["label_ids"]}
-                        )
+                        updated_task["label_ids"].append(next_action_id)
 
                 elif next_action_id in task["label_ids"]:
                     _progress("removing label", 3)
-                    task["label_ids"].remove(next_action_id)
+                    updated_task["label_ids"].remove(next_action_id)
+
+                # Detect if any changes were made to the task
+                if any(updated_task[key] != task[key] for key in task.keys()):
+                    _progress("updating this task", 3)
                     updated_tasks.append(
-                        {"id": task["id"], "label_ids": task["label_ids"]}
+                        {
+                            id: task["value"],
+                            **{
+                                key: value
+                                for key, value in task.items()
+                                if updated_task[key] != task[key]
+                            },
+                        }
                     )
 
     for task in updated_tasks:

@@ -1,5 +1,5 @@
 import pytest
-from actions import todoist
+from actions.todoist import prioritise_actions
 
 
 @pytest.fixture
@@ -54,5 +54,5 @@ def successful_mocks(requests_mock):
     )
 
 
-def test_update_next_actions(successful_mocks):  # pylint: disable=W0613,W0621
-    todoist.update_next_actions("fake-token")
+def test_prioritise_actions(successful_mocks):  # pylint: disable=W0613,W0621
+    prioritise_actions("fake-token")

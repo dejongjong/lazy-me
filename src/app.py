@@ -14,8 +14,8 @@ def hello_world():
     return "Hello, World!", 200
 
 
-@app.route("/update-next-actions", methods=["POST"])
-def update_next_actions():
+@app.route("/prioritise_actions", methods=["POST"])
+def prioritise_actions():
     data = request.get_json()
     if data is None:
         return "Bad Request: No POST data received", 400
@@ -23,7 +23,7 @@ def update_next_actions():
         return "Bad Request: No token received", 400
 
     try:
-        progress_messages = todoist.update_next_actions(
+        progress_messages = todoist.prioritise_actions(
             token=data["token"], next_action_label=data.get("next_action_label")
         )
         return "\n".join(progress_messages), 200, {'Content-Type': 'text/plain'}
